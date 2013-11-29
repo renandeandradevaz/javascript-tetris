@@ -1,0 +1,274 @@
+<html>
+	<head>
+		<title>Tetris</title>
+		<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+	</head>
+	
+	<body>
+		<style>
+			
+			.game-container{
+				border: 5px solid black;
+				margin: auto;
+			}
+			
+			.quadradinho{
+				width: 20px;
+				height: 20px;
+			}
+			
+			.quadrado-movel{
+				background-color: black;
+			}
+
+			.quadrado-imovel{
+				background-color: grey;
+			}
+
+			.pontuacao{
+                position: absolute;
+                top: 200px;
+                padding: 20px;
+                font-size: 20px;
+        	}
+		
+		</style>
+
+		<div class='pontuacao'>
+            <h3> Pontuacao atual: <b id = 'pontuacao'> 0 </b> </h3>
+
+            <br>
+            <br>
+
+            <h6> Pressione enter para trocar a posicao da figura </h5>
+    	</div>
+
+		<table class="game-container" >	
+		</table>
+
+	</body>
+	
+	<script>
+	
+		$(document).ready(function(){
+				
+			largura = 10;
+			altura = largura * 2;
+			pontuacao = 0;
+			figura = 0;
+			
+			criarEstruturaTabela();
+
+			intervaloRealizarMovimentos = setInterval(realizarMovimentos, 300);
+
+			escutarEventosDoTeclado();
+		});
+		
+			
+		function escutarEventosDoTeclado(){
+			
+			$("body").on("keydown", function (e) {
+				
+				var tecla = (window.event) ? event.keyCode : e.which;
+				
+				if(tecla == 37){
+					realizarMovimentos("esquerda");
+				}
+				if(tecla == 39){
+					realizarMovimentos("direita");
+				}
+				if(tecla == 13){
+					trocarPosicoesFiguras("direita");
+				}
+			});
+		}
+
+		function trocarPosicoesFiguras(){
+
+			if(figura == 2){
+
+				$(".quadrado-movel").each(function(){
+
+					var id = $(this).attr("id");
+					var eixoX = obterEixoX(id);
+					var eixoY = obterEixoY(id);
+				});
+			}
+		}
+
+		function realizarMovimentos(direcao){
+
+			var idsQuadradosQueSeraoAdicionados = [];
+			var idsQuadradosQueSeraoRemovidos = [];
+			var continuaEmMovimento = true;
+
+			if($(".quadrado-movel").length > 0){
+
+				$(".quadrado-movel").each(function(){
+
+					var id = $(this).attr("id");
+					var eixoX = obterEixoX(id);
+					var eixoY = obterEixoY(id);
+
+					if (direcao == 'esquerda') {
+						eixoX--;
+					}
+					else if (direcao == 'direita') {
+						eixoX++;
+					}
+					else{
+						eixoY++;
+					}
+
+					if(eixoY > altura || $("#" + eixoX + "-" + (obterEixoY(id) + 1)).hasClass("quadrado-imovel")){
+
+						continuaEmMovimento = false;
+
+						$(".quadrado-movel").each(function(i, item){
+							$(item).addClass("quadrado-imovel");
+							$(item).removeClass("quadrado-movel");
+						});
+						return;
+					}
+
+					if(eixoX <= 0 || eixoX > 10){
+						continuaEmMovimento = false;
+						return;
+					}
+
+					idsQuadradosQueSeraoRemovidos.push(id);
+
+					var idQuadradoQueSeraAdicionado = eixoX + "-" + eixoY;
+					idsQuadradosQueSeraoAdicionados.push(idQuadradoQueSeraAdicionado);
+				});
+
+				if(continuaEmMovimento){
+
+					for (var idQuadradoQueSeraRemovido in idsQuadradosQueSeraoRemovidos){
+
+						$("#" + idsQuadradosQueSeraoRemovidos[idQuadradoQueSeraRemovido]).removeClass("quadrado-movel");						
+					}
+
+					for (var idQuadradoQueSeraAdicionado in idsQuadradosQueSeraoAdicionados){
+
+						$("#" + idsQuadradosQueSeraoAdicionados[idQuadradoQueSeraAdicionado]).addClass("quadrado-movel");
+					}
+				}
+
+				else{
+
+					var fezPontuacao = false;
+
+					$(".game-container").find("tr").each(function(){
+
+						if($(this).find(".quadrado-imovel").length == 10){
+							$(this).find(".quadrado-imovel").each(function(){
+								$(this).removeClass("quadrado-imovel");
+							});
+							fezPontuacao = true;
+							pontuacao++;
+							$("#pontuacao").text(pontuacao);
+						}
+					});
+
+					if(fezPontuacao){
+
+						$(".quadrado-imovel").each(function(){
+
+							$(this).removeClass("quadrado-imovel");
+							$(this).addClass("quadrado-movel");
+						});
+					}
+				}
+			}
+
+			else{
+
+				criarFiguraAleatoria();
+			}
+		}
+
+		function criarFiguraAleatoria(){
+
+			figura = gerarNumeroAleatorio();
+
+			if (figura == 1) {
+
+				$("#4-1").addClass("quadrado-movel primeiro");
+				$("#5-1").addClass("quadrado-movel segundo");
+				$("#4-2").addClass("quadrado-movel terceiro");
+				$("#5-2").addClass("quadrado-movel quarto");
+			}
+
+			if (figura == 2) {
+
+				$("#3-1").addClass("quadrado-movel");
+				$("#4-1").addClass("quadrado-movel");
+				$("#5-1").addClass("quadrado-movel");
+				$("#6-1").addClass("quadrado-movel");
+			}
+
+			if (figura == 3) {
+
+				$("#3-1").addClass("quadrado-movel");
+				$("#3-2").addClass("quadrado-movel");
+				$("#4-2").addClass("quadrado-movel");
+				$("#5-2").addClass("quadrado-movel");
+			}
+
+			if (figura == 4) {
+
+				$("#5-1").addClass("quadrado-movel");
+				$("#4-2").addClass("quadrado-movel");
+				$("#5-2").addClass("quadrado-movel");
+				$("#6-2").addClass("quadrado-movel");
+			}
+
+			if (figura == 5) {
+
+				$("#6-1").addClass("quadrado-movel");
+				$("#6-2").addClass("quadrado-movel");
+				$("#5-2").addClass("quadrado-movel");
+				$("#5-3").addClass("quadrado-movel");
+			}
+		}
+
+		function obterEixoY(id){
+
+			return parseInt(id.substring(id.indexOf("-") + 1));
+        }
+
+        function obterEixoX(id){
+                        
+        	return parseInt(id.substring(0, id.indexOf("-")));
+        }
+
+        function gerarNumeroAleatorio(){
+            return Math.floor((Math.random() * 5) + 1);
+        }
+		
+		function criarEstruturaTabela(){
+			
+			for(i=1 ; i<=altura ; i++){
+				
+				$(".game-container").append("<tr>");
+				
+				for(j=1 ; j<=largura ; j++){
+					
+					$(".game-container tr:last").append("<td>");
+					$(".game-container td:last").addClass("quadradinho");
+					$(".game-container td:last").attr("id", j + "-" + i);
+				}
+			}
+		}
+		
+		function definirVelocidade(milissegundos){
+
+			clearInterval(intervaloRealizarMovimentos);
+
+			intervaloRealizarMovimentos = setInterval(realizarMovimentos, milissegundos);
+		}
+	
+	</script>
+	
+</html>
