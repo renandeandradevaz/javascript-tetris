@@ -1,2 +1,1 @@
-javascript-tetris
-=================
+O jogo tetris feito em javascript
